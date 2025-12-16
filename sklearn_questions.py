@@ -85,22 +85,17 @@ class KNearestNeighbors(ClassifierMixin, BaseEstimator):
             The current instance of the classifier
         """
         X, y = check_X_y(X, y, dtype=np.float64)
-
         if (not isinstance(self.n_neighbors, int) 
             or self.n_neighbors <= 0):
             raise ValueError("n_neighbors must be a positive integer")
-
         if type_of_target(y) not in ("binary", "multiclass"):
             label_type = type_of_target(y)
             raise ValueError("Unknown label type: %s" % label_type)
-
         self.X_ = X
         self.y_ = y
         self.classes_ = np.unique(y)
         self.n_features_in_ = X.shape[1]
-
         self.n_neighbors_ = min(self.n_neighbors, X.shape[0])
-
         return self
 
     def predict(self, X):
@@ -219,27 +214,21 @@ class MonthlySplit(BaseCrossValidator):
         """
         if isinstance(X, pd.Series):
             X = X.to_frame()
-
         if self.time_col == 'index':
             time_index = X.index
         else:
             time_index = X[self.time_col]
-
         if not pd.api.types.is_datetime64_any_dtype(time_index):
             raise ValueError(f"{self.time_col} must be datetime")
-
         time_index = pd.DatetimeIndex(time_index)
         if not pd.api.types.is_datetime64_any_dtype(time_index):
             raise ValueError(f"{self.time_col} must be datetime")
-
         sort_order = np.argsort(time_index.values)
         X_sorted = X.iloc[sort_order]
         time_index_sorted = time_index[sort_order]
-
         months = pd.Series(time_index_sorted).dt.to_period('M').unique()
         if len(months) < 2:
             raise ValueError("Not enough months to create a split")
-
         for i in range(len(months)-1):
             train_month = months[i]
             test_month = months[i+1]
@@ -250,7 +239,6 @@ class MonthlySplit(BaseCrossValidator):
             idx_train = sort_order[train_mask.values]
             idx_test = sort_order[test_mask.values]
             yield idx_train, idx_test
-
         # n_samples = X.shape[0]
         # n_splits = self.get_n_splits(X, y, groups)
         # for i in range(n_splits):
@@ -259,4 +247,3 @@ class MonthlySplit(BaseCrossValidator):
         #     yield (
         #         idx_train, idx_test
         #     )
-        
