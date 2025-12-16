@@ -86,7 +86,7 @@ class KNearestNeighbors(ClassifierMixin, BaseEstimator):
         """
         X, y = check_X_y(X, y, dtype=np.float64)
         if (not isinstance(self.n_neighbors, int)
-            or self.n_neighbors <= 0):
+                or self.n_neighbors <= 0):
             raise ValueError("n_neighbors must be a positive integer")
         if type_of_target(y) not in ("binary", "multiclass"):
             label_type = type_of_target(y)
