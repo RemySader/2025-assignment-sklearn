@@ -56,7 +56,11 @@ from sklearn.base import ClassifierMixin
 
 from sklearn.model_selection import BaseCrossValidator
 
-from sklearn.utils.validation import check_is_fitted, check_X_y, check_array
+from sklearn.utils.validation import (
+    check_is_fitted,
+    validate_data,
+    check_X_y
+)
 from sklearn.utils.multiclass import type_of_target
 # from sklearn.utils.validation import validate_data
 from sklearn.metrics.pairwise import pairwise_distances
@@ -84,18 +88,16 @@ class KNearestNeighbors(ClassifierMixin, BaseEstimator):
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
-        X, y = check_X_y(X, y, dtype=np.float64)
-        if (not isinstance(self.n_neighbors, int)
-                or self.n_neighbors <= 0):
+        X, y = validate_data(self, X, y, dtype=np.float64)
+        if not isinstance(self.n_neighbors, int) or self.n_neighbors <= 0:
             raise ValueError("n_neighbors must be a positive integer")
         if type_of_target(y) not in ("binary", "multiclass"):
-            label_type = type_of_target(y)
-            raise ValueError("Unknown label type: %s" % label_type)
+            raise ValueError(f"Unknown label type: {type_of_target(y)}")
         self.X_ = X
         self.y_ = y
         self.classes_ = np.unique(y)
-        self.n_features_in_ = X.shape[1]
         self.n_neighbors_ = min(self.n_neighbors, X.shape[0])
+
         return self
 
     def predict(self, X):
@@ -111,16 +113,22 @@ class KNearestNeighbors(ClassifierMixin, BaseEstimator):
         y : ndarray, shape (n_test_samples,)
             Predicted class labels for each test data sample.
         """
-        check_is_fitted(self, ['X_', 'y_'])
-        X = check_array(X, dtype=np.float64)
+        check_is_fitted(self)
+        X = validate_data(
+            self,
+            X,
+            dtype=np.float64,
+            reset=False,
+        )
         distances = pairwise_distances(X, self.X_)
         sorted_indices = np.argsort(distances, axis=1)
         nearest_indices = sorted_indices[:, :self.n_neighbors_]
-        y_pred = []
-        for row in nearest_indices:
-            y_pred.append(Counter(self.y_[row]).most_common(1)[0][0])
-        y_pred = np.array(y_pred)
-        return y_pred
+
+        y_pred = [
+            Counter(self.y_[row]).most_common(1)[0][0]
+            for row in nearest_indices
+        ]
+        return np.array(y_pred)
         # y_pred = np.zeros(X.shape[0])
         # return y_pred
 
