@@ -85,7 +85,7 @@ class KNearestNeighbors(ClassifierMixin, BaseEstimator):
             The current instance of the classifier
         """
         X, y = check_X_y(X, y, dtype=np.float64)
-        if (not isinstance(self.n_neighbors, int) 
+        if (not isinstance(self.n_neighbors, int)
             or self.n_neighbors <= 0):
             raise ValueError("n_neighbors must be a positive integer")
         if type_of_target(y) not in ("binary", "multiclass"):
@@ -224,7 +224,6 @@ class MonthlySplit(BaseCrossValidator):
         if not pd.api.types.is_datetime64_any_dtype(time_index):
             raise ValueError(f"{self.time_col} must be datetime")
         sort_order = np.argsort(time_index.values)
-        X_sorted = X.iloc[sort_order]
         time_index_sorted = time_index[sort_order]
         months = pd.Series(time_index_sorted).dt.to_period('M').unique()
         if len(months) < 2:
